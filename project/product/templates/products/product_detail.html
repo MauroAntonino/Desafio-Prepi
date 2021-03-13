@@ -1,0 +1,71 @@
+{% extends "base_menu.html" %}
+{% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% block head %}
+<style>
+.overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: none;
+  background-color: rgba(0,0,0,0.5); /*dim the background*/
+}
+</style>
+{% endblock %}
+{% block content %}
+{% if product.content_type %}
+<div id="overlay" class="overlay" style="text-align: center;"
+   onclick="document.getElementById('overlay').style.display = 'none';" >
+<img style="width:90%;margin-top: 50px; border:3px solid black;" src="{% url 'products:product_picture' product.id %}">
+</div>
+{% endif %}
+<span style="float: right;">
+({{ product.updated_at|naturaltime }})
+{% if product.owner == user %}
+<a href="{% url 'products:product_update' product.id %}"><i class="fa fa-pencil"></i></a>
+<a href="{% url 'products:product_delete' product.id %}"><i class="fa fa-trash"></i></a>
+{% endif %}
+</span>
+<h1>{{ product.title }}</h1>
+{% if product.content_type %}
+<img style="float:right; max-width:50%;" src="{% url 'products:product_picture' product.id %}"
+    onclick="document.getElementById('overlay').style.display = 'block';">
+{% endif %}
+<p>
+{{ product.text }}
+</p>
+{{ product.price }}
+<p>
+</p>
+<p>
+<a href="{% url 'products:all' %}">All products</a>
+</p>
+({{ forum.updated_at|naturaltime }})
+</p>
+<p>
+{% if user.is_authenticated %}
+<br clear="all"/>
+<p>
+{% load crispy_forms_tags %}
+<form method="post" action="{% url 'products:product_comment_create' product.id %}">
+    {% csrf_token %}
+    {{ comment_product|crispy }}
+<input type="submit" value="Submit">
+<input type="submit" value="All products" onclick="window.location.href='{% url 'products:all' %}';return false;">
+</form>
+</p>
+{% endif %}
+{% for comment in comments %}
+<p> {{ comment.text }}
+({{ comment.updated_at|naturaltime }})
+{% if user == comment.owner %}
+<a href="{% url 'products:product_comment_delete' comment.id %}"><i class="fa fa-trash"></i></a>
+{% endif %}
+</p>
+{% endfor %}
+{% endblock %}
+
+
+
